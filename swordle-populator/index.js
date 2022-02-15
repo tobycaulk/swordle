@@ -5,13 +5,6 @@ const WORD_LIST_FILE = 'swe_wordlist';
 
 const client = new MongoClient('mongodb://127.0.0.1:27017');
 
-(async () => {
-    await client.connect();
-    console.log('Connected to Mongo');
-    await storeWords(client, retrieveWords());
-    client.close();
-})();
-
 const retrieveWords = _ => {
     let words = [];
     try {
@@ -25,6 +18,13 @@ const retrieveWords = _ => {
 
     return words;
 }
+
+(async () => {
+    /*await client.connect();
+    console.log('Connected to Mongo');
+    await storeWords(client, retrieveWords());
+    client.close();*/
+})();
 
 const storeWords = async (client, words) => {
     const db = client.db('swordle');
@@ -58,3 +58,6 @@ const isValidWord = word => {
 
     return /[a-zA-ZöäåÖÄÅ]{5}/.test(word)
 }
+
+const words = retrieveWords();
+fs.writeFileSync('word-list.json', JSON.stringify(words));
