@@ -1,4 +1,6 @@
 html, body {
-    background-color: rgb(18, 18, 19) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: #003866 !important;
     color: white;
 }

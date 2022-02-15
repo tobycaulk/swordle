@@ -1,9 +1,19 @@
 import { useEffect, useState, useRef } from 'react';
 import { use100vh } from 'react-div-100vh';
+import moment from 'moment';
 import './App.css';
+import allWords from './word-list.json';
 
 const MAX_WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
+const FIRST_DATE = moment("2022-02-14");
+
+const letterState = {
+  default: 'default',
+  present: 'present',
+  absent: 'absent',
+  correct: 'correct'
+}
 
 const App = () => {
   const [words, setWords] = useState([]);
@@ -37,7 +47,7 @@ const App = () => {
       return;
     }
 
-    word.push(letter);
+    word.push({ letter: letter, state: letterState.default });
     updateWord(word);
   }
 
@@ -55,20 +65,30 @@ const App = () => {
     updateWord(word);
   }
 
+  const onEnterPress = _ => {
+    const word = getWord();
+    if(word.length != MAX_WORD_LENGTH) {
+      return;
+    }
+
+    const updatedWord = word;
+    for(let i = 0; i < word.length; i++) {
+      updatedWord[i].state = scoreLetter(updatedWord[i].letter.toLowerCase(), correctWord.toLowerCase(), i);
+    }
+
+    updateWord(updatedWord);
+    setCurrentRow(currentRow + 1);
+  }
+
   useEffect(() => {
     setGameBoardHeight(gameBoardRef.current.clientHeight);
   });
 
   useEffect(() => {
-    fetch('https://9b57-98-27-159-174.ngrok.io/word')
-      .then(res => res.json())
-      .then(
-        (result) => {
-          setCorrectWord(result.word);
-        },
-        (error) => {
-          console.error(error);
-        })
+    const today = moment();
+    const elapsed = today.diff(FIRST_DATE, "days");
+    setCorrectWord(allWords[elapsed]);
+    console.log(correctWord);
   }, []);
 
   return (
@@ -111,7 +131,7 @@ const App = () => {
           <KeyboardKey letter={'Ä'} onClick={onKeyPress} />
         </KeyboardRow>
         <KeyboardRow inset>
-          <KeyboardKey letter={'↵'} double />
+          <KeyboardKey letter={'↵'} onClick={onEnterPress} double />
           <KeyboardKey letter={'Z'} onClick={onKeyPress} />
           <KeyboardKey letter={'X'} onClick={onKeyPress} />
           <KeyboardKey letter={'C'} onClick={onKeyPress} />
@@ -132,13 +152,23 @@ const isValidLetter = letter => {
   }
 
   return /[a-zA-ZöäåÖÄÅ]{1}/.test(letter)
-};
+}
 
-const WordRow = ({ word = [], wordState = [], current }) => {
+const scoreLetter = (letter, correctWord, index) => {
+  if(letter === correctWord[index]) {
+    return letterState.correct;
+  } else if(correctWord.includes(letter)) {
+    return letterState.present;
+  } else {
+    return letterState.absent;
+  }
+}
+
+const WordRow = ({ word = [], current }) => {
   return (
       <div className={'word-row'}>
         {[...Array(MAX_WORD_LENGTH)].map((_, i) => {
-          return <Tile key={i} />
+          return <Tile key={i} letter={word[i] && word[i].letter} state={word[i] && word[i].state} />
         })}
       </div>
   );
@@ -164,15 +194,23 @@ const KeyboardRow = ({ inset, children }) => {
 
 const KeyboardKeySpace = _ => {
   return (
-    <div style={{ flex: 0.65 }}></div>
+    <div style={{ flex: 0.7 }}></div>
   )
 }
 
 const KeyboardKey = ({ letter, double, noMargin, onClick }) => {
   return (
-    <button className={`key`} style={{ flex: double ? 1.5 : 1, margin: noMargin ? 0 : '0 6px 0 0' }} onClick={_ => onClick && onClick(letter)}>
+    <button className={`key`} style={{ flex: double ? 1.5 : 1, margin: noMargin ? 0 : '0 3px 0 3px' }} onClick={_ => onClick && onClick(letter)}>
       {letter}
     </button>
+  )
+}
+
+const Notification = ({ message }) => {
+  return (
+    <div className='notification'>
+      {message}
+    </div>
   )
 }
 

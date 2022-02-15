@@ -76,6 +76,7 @@
 }
 
 .tile {
+  font-family: sans-serif;
   width: 100%;
   display: inline-flex;
   justify-content: center;
@@ -87,7 +88,7 @@
   box-sizing: border-box;
   color: white;
   user-select: none;
-  border: 2px solid rgb(58, 58, 60);
+  border: 2px solid #b38f00;
   border-radius: 1px;
   text-transform: uppercase;
 }
@@ -100,12 +101,25 @@
 
 .present {
   background-color: rgb(181, 159, 59);
+  border: none;
 }
 
 .correct {
   background-color: rgb(83, 141, 78);
+  border: none;
 }
 
 .absent {
   background-color: rgb(58, 58, 60);
+  border: none;
+}
+
+.notification {
+  position: absolute;
+  top: 100px;
+  border: 1px solid rgb(58, 58, 60);
+  border-radius: 5px;
+  font-size: 32px;
+  background-color: rgba(58, 58, 60);
+  padding: 10px 20px;
 }
