@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { use100vh } from 'react-div-100vh';
 import moment from 'moment';
 import './App.css';
@@ -7,6 +7,8 @@ import allWords from './word-list.json';
 const MAX_WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
 const FIRST_DATE = moment("2022-02-14");
+const NOTIFICATION_DELAY = 3000;
+const NOTIFICATION_FADEOUT = 100;
 
 const letterState = {
   default: 'default',
@@ -15,15 +17,20 @@ const letterState = {
   correct: 'correct'
 }
 
+const notificationMessage = {
+  invalidWord: 'Inte en giltig ord'
+}
+
 const App = () => {
   const [words, setWords] = useState([]);
   const [currentRow, setCurrentRow] = useState(0);
   const [gameBoardHeight, setGameBoardHeight] = useState(500);
   const [correctWord, setCorrectWord] = useState('');
-  const gameBoardRef = useRef(null);
+  const [notification, setNotification] = useState({});
 
+  const gameBoardRef = useRef(null);
   const height = use100vh();
-  
+
   const getWord = _ => {
     let word = words[currentRow];
     if(!word) {
@@ -67,7 +74,18 @@ const App = () => {
 
   const onEnterPress = _ => {
     const word = getWord();
-    if(word.length != MAX_WORD_LENGTH) {
+    if(!word || word.length != MAX_WORD_LENGTH) {
+      return;
+    }
+    
+    const constructedWord = word.reduce((prev, curr, _) => prev += curr.letter, []);
+    if(!constructedWord || constructedWord.length != 5) {
+      setNotification({ message: notificationMessage.invalidWord });
+      return;
+    }
+     
+    if(!allWords.includes(constructedWord.toLowerCase())) {
+      setNotification({ message: notificationMessage.invalidWord });
       return;
     }
 
@@ -88,61 +106,73 @@ const App = () => {
     const today = moment();
     const elapsed = today.diff(FIRST_DATE, "days");
     setCorrectWord(allWords[elapsed]);
-    console.log(correctWord);
   }, []);
 
   return (
-    <div className={'window-container'} style={{ height: height }}>
-      <div className={'header'}>
-        Swordle
-      </div>
-      <div className={'board-container'} ref={gameBoardRef}>
-        <div className={'game-container'} style={{ width: gameBoardHeight * 0.80 }}>
-          {[...Array(MAX_GUESSES)].map((_, i) => {
-            return <WordRow key={i} word={words[i]} current={currentRow === i} />
-          })}
+    <>
+      {
+        (notification && notification.hasOwnProperty('message')) && (
+          <Notification 
+            message={notification.message} 
+            delay={NOTIFICATION_DELAY}
+            onTimeout={() => {
+              setNotification({});
+            }}
+          /> 
+        )
+      }
+      <div className={'window-container'} style={{ height: height }}>
+        <div className={'header'}>
+          Swordle
+        </div>
+        <div className={'board-container'} ref={gameBoardRef}>
+          <div className={'game-container'} style={{ width: gameBoardHeight * 0.80 }}>
+            {[...Array(MAX_GUESSES)].map((_, i) => {
+              return <WordRow key={i} word={words[i]} current={currentRow === i} />
+            })}
+          </div>
+        </div>
+        <div className={'keyboard-container'}>
+          <KeyboardRow>
+            <KeyboardKey letter={'Q'} onClick={onKeyPress} />
+            <KeyboardKey letter={'W'} onClick={onKeyPress} />
+            <KeyboardKey letter={'E'} onClick={onKeyPress} />
+            <KeyboardKey letter={'R'} onClick={onKeyPress} />
+            <KeyboardKey letter={'T'} onClick={onKeyPress} />
+            <KeyboardKey letter={'Y'} onClick={onKeyPress} />
+            <KeyboardKey letter={'U'} onClick={onKeyPress} />
+            <KeyboardKey letter={'I'} onClick={onKeyPress} />
+            <KeyboardKey letter={'O'} onClick={onKeyPress} />
+            <KeyboardKey letter={'P'} onClick={onKeyPress} />
+            <KeyboardKey letter={'Å'} onClick={onKeyPress} />
+          </KeyboardRow>
+          <KeyboardRow>
+            <KeyboardKey letter={'A'} onClick={onKeyPress} />
+            <KeyboardKey letter={'S'} onClick={onKeyPress} />
+            <KeyboardKey letter={'D'} onClick={onKeyPress} />
+            <KeyboardKey letter={'F'} onClick={onKeyPress} />
+            <KeyboardKey letter={'G'} onClick={onKeyPress} />
+            <KeyboardKey letter={'H'} onClick={onKeyPress} />
+            <KeyboardKey letter={'J'} onClick={onKeyPress} />
+            <KeyboardKey letter={'K'} onClick={onKeyPress} />
+            <KeyboardKey letter={'L'} onClick={onKeyPress} />
+            <KeyboardKey letter={'Ö'} onClick={onKeyPress} />
+            <KeyboardKey letter={'Ä'} onClick={onKeyPress} />
+          </KeyboardRow>
+          <KeyboardRow inset>
+            <KeyboardKey letter={'↵'} onClick={onEnterPress} double />
+            <KeyboardKey letter={'Z'} onClick={onKeyPress} />
+            <KeyboardKey letter={'X'} onClick={onKeyPress} />
+            <KeyboardKey letter={'C'} onClick={onKeyPress} />
+            <KeyboardKey letter={'V'} onClick={onKeyPress} />
+            <KeyboardKey letter={'B'} onClick={onKeyPress} />
+            <KeyboardKey letter={'N'} onClick={onKeyPress} />
+            <KeyboardKey letter={'M'} onClick={onKeyPress} />
+            <KeyboardKey letter={'⌫'} onClick={onDeletePress} double />
+          </KeyboardRow>
         </div>
       </div>
-      <div className={'keyboard-container'}>
-        <KeyboardRow>
-          <KeyboardKey letter={'Q'} onClick={onKeyPress} />
-          <KeyboardKey letter={'W'} onClick={onKeyPress} />
-          <KeyboardKey letter={'E'} onClick={onKeyPress} />
-          <KeyboardKey letter={'R'} onClick={onKeyPress} />
-          <KeyboardKey letter={'T'} onClick={onKeyPress} />
-          <KeyboardKey letter={'Y'} onClick={onKeyPress} />
-          <KeyboardKey letter={'U'} onClick={onKeyPress} />
-          <KeyboardKey letter={'I'} onClick={onKeyPress} />
-          <KeyboardKey letter={'O'} onClick={onKeyPress} />
-          <KeyboardKey letter={'P'} onClick={onKeyPress} />
-          <KeyboardKey letter={'Å'} onClick={onKeyPress} />
-        </KeyboardRow>
-        <KeyboardRow>
-          <KeyboardKey letter={'A'} onClick={onKeyPress} />
-          <KeyboardKey letter={'S'} onClick={onKeyPress} />
-          <KeyboardKey letter={'D'} onClick={onKeyPress} />
-          <KeyboardKey letter={'F'} onClick={onKeyPress} />
-          <KeyboardKey letter={'G'} onClick={onKeyPress} />
-          <KeyboardKey letter={'H'} onClick={onKeyPress} />
-          <KeyboardKey letter={'J'} onClick={onKeyPress} />
-          <KeyboardKey letter={'K'} onClick={onKeyPress} />
-          <KeyboardKey letter={'L'} onClick={onKeyPress} />
-          <KeyboardKey letter={'Ö'} onClick={onKeyPress} />
-          <KeyboardKey letter={'Ä'} onClick={onKeyPress} />
-        </KeyboardRow>
-        <KeyboardRow inset>
-          <KeyboardKey letter={'↵'} onClick={onEnterPress} double />
-          <KeyboardKey letter={'Z'} onClick={onKeyPress} />
-          <KeyboardKey letter={'X'} onClick={onKeyPress} />
-          <KeyboardKey letter={'C'} onClick={onKeyPress} />
-          <KeyboardKey letter={'V'} onClick={onKeyPress} />
-          <KeyboardKey letter={'B'} onClick={onKeyPress} />
-          <KeyboardKey letter={'N'} onClick={onKeyPress} />
-          <KeyboardKey letter={'M'} onClick={onKeyPress} />
-          <KeyboardKey letter={'⌫'} onClick={onDeletePress} double />
-        </KeyboardRow>
-      </div>
-    </div>
+    </>
   );
 }
 
@@ -200,18 +230,27 @@ const KeyboardKeySpace = _ => {
 
 const KeyboardKey = ({ letter, double, noMargin, onClick }) => {
   return (
-    <button className={`key`} style={{ flex: double ? 1.5 : 1, margin: noMargin ? 0 : '0 3px 0 3px' }} onClick={_ => onClick && onClick(letter)}>
+    <button className={`key`} style={{ flex: double ? 1.5 : 1, margin: noMargin ? 0 : '0 2px 0 2px' }} onClick={_ => onClick && onClick(letter)}>
       {letter}
     </button>
   )
 }
 
-const Notification = ({ message }) => {
-  return (
-    <div className='notification'>
-      {message}
-    </div>
-  )
+const Notification = ({ message, delay, onTimeout }) => {
+  const [visible, setVisible] = useState(true);
+  const [fadeClassName, setFadeClassName] = useState('fade-in');
+
+  useEffect(() => {
+    setTimeout(() => {
+      setFadeClassName('fade-out');
+      setTimeout(() => {
+        setVisible(false);
+        onTimeout();
+      }, NOTIFICATION_FADEOUT)
+    }, delay);
+  }, [delay]);
+
+  return visible ? (<div className={`notification ${fadeClassName}`}>{message}</div>) : null;
 }
 
 export default App;
