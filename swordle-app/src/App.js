@@ -23,6 +23,7 @@ const notificationMessage = {
 
 const App = () => {
   const [words, setWords] = useState([]);
+  const [usedLetters, setUsedLetters] = useState([]);
   const [currentRow, setCurrentRow] = useState(0);
   const [gameBoardHeight, setGameBoardHeight] = useState(500);
   const [correctWord, setCorrectWord] = useState('');
@@ -31,8 +32,22 @@ const App = () => {
   const gameBoardRef = useRef(null);
   const height = use100vh();
 
-  const getWord = _ => {
-    let word = words[currentRow];
+  const getKeyState = letter => {
+    const usedLetter = usedLetters.filter(ul => ul.letter === letter.toLowerCase())[0];
+    //console.log(usedLetter);
+    if(!usedLetter) {
+      return letterState.default;
+    }
+
+    return usedLetter.state;
+  }
+
+  const getConstructedWord = word => {
+    return word.reduce((prev, curr, _) => prev += curr.letter, [])
+  }
+
+  const getWordFromRow = row => {
+    let word = words[row];
     if(!word) {
       word = [];
     } else if(word.length >= MAX_WORD_LENGTH) {
@@ -40,6 +55,10 @@ const App = () => {
     }
 
     return word;
+  }
+
+  const getWord = _ => {
+    return getWordFromRow(currentRow);
   }
 
   const updateWord = word => {
@@ -78,7 +97,7 @@ const App = () => {
       return;
     }
     
-    const constructedWord = word.reduce((prev, curr, _) => prev += curr.letter, []);
+    const constructedWord = getConstructedWord(word);
     if(!constructedWord || constructedWord.length != 5) {
       setNotification({ message: notificationMessage.invalidWord });
       return;
@@ -90,10 +109,20 @@ const App = () => {
     }
 
     const updatedWord = word;
+    const updatedUsedLetters = usedLetters;
     for(let i = 0; i < word.length; i++) {
-      updatedWord[i].state = scoreLetter(updatedWord[i].letter.toLowerCase(), correctWord.toLowerCase(), i);
+      const letter = updatedWord[i].letter.toLowerCase();
+      const letterState = scoreLetter(letter, correctWord.toLowerCase(), i);
+      updatedWord[i].state = letterState;
+      const usedLetter = usedLetters.filter(ul => ul.letter === letter)[0];
+      console.log(usedLetter);
+      if(!usedLetter) {
+        updatedUsedLetters.push({ letter: letter, state: letterState });
+      }
     }
 
+    setUsedLetters([...updatedUsedLetters]);
+    console.log(usedLetters);
     updateWord(updatedWord);
     setCurrentRow(currentRow + 1);
   }
@@ -134,41 +163,41 @@ const App = () => {
         </div>
         <div className={'keyboard-container'}>
           <KeyboardRow>
-            <KeyboardKey letter={'Q'} onClick={onKeyPress} />
-            <KeyboardKey letter={'W'} onClick={onKeyPress} />
-            <KeyboardKey letter={'E'} onClick={onKeyPress} />
-            <KeyboardKey letter={'R'} onClick={onKeyPress} />
-            <KeyboardKey letter={'T'} onClick={onKeyPress} />
-            <KeyboardKey letter={'Y'} onClick={onKeyPress} />
-            <KeyboardKey letter={'U'} onClick={onKeyPress} />
-            <KeyboardKey letter={'I'} onClick={onKeyPress} />
-            <KeyboardKey letter={'O'} onClick={onKeyPress} />
-            <KeyboardKey letter={'P'} onClick={onKeyPress} />
-            <KeyboardKey letter={'Å'} onClick={onKeyPress} />
+            <KeyboardKey letter={'Q'} state={getKeyState('Q')} onClick={onKeyPress} />
+            <KeyboardKey letter={'W'} state={getKeyState('W')} onClick={onKeyPress} />
+            <KeyboardKey letter={'E'} state={getKeyState('E')} onClick={onKeyPress} />
+            <KeyboardKey letter={'R'} state={getKeyState('R')} onClick={onKeyPress} />
+            <KeyboardKey letter={'T'} state={getKeyState('T')} onClick={onKeyPress} />
+            <KeyboardKey letter={'Y'} state={getKeyState('Y')} onClick={onKeyPress} />
+            <KeyboardKey letter={'U'} state={getKeyState('U')} onClick={onKeyPress} />
+            <KeyboardKey letter={'I'} state={getKeyState('I')} onClick={onKeyPress} />
+            <KeyboardKey letter={'O'} state={getKeyState('O')} onClick={onKeyPress} />
+            <KeyboardKey letter={'P'} state={getKeyState('P')} onClick={onKeyPress} />
+            <KeyboardKey letter={'Å'} state={getKeyState('Å')} onClick={onKeyPress} />
           </KeyboardRow>
           <KeyboardRow>
-            <KeyboardKey letter={'A'} onClick={onKeyPress} />
-            <KeyboardKey letter={'S'} onClick={onKeyPress} />
-            <KeyboardKey letter={'D'} onClick={onKeyPress} />
-            <KeyboardKey letter={'F'} onClick={onKeyPress} />
-            <KeyboardKey letter={'G'} onClick={onKeyPress} />
-            <KeyboardKey letter={'H'} onClick={onKeyPress} />
-            <KeyboardKey letter={'J'} onClick={onKeyPress} />
-            <KeyboardKey letter={'K'} onClick={onKeyPress} />
-            <KeyboardKey letter={'L'} onClick={onKeyPress} />
-            <KeyboardKey letter={'Ö'} onClick={onKeyPress} />
-            <KeyboardKey letter={'Ä'} onClick={onKeyPress} />
+            <KeyboardKey letter={'A'} state={getKeyState('A')} onClick={onKeyPress} />
+            <KeyboardKey letter={'S'} state={getKeyState('S')} onClick={onKeyPress} />
+            <KeyboardKey letter={'D'} state={getKeyState('D')} onClick={onKeyPress} />
+            <KeyboardKey letter={'F'} state={getKeyState('F')} onClick={onKeyPress} />
+            <KeyboardKey letter={'G'} state={getKeyState('G')} onClick={onKeyPress} />
+            <KeyboardKey letter={'H'} state={getKeyState('H')} onClick={onKeyPress} />
+            <KeyboardKey letter={'J'} state={getKeyState('J')} onClick={onKeyPress} />
+            <KeyboardKey letter={'K'} state={getKeyState('K')} onClick={onKeyPress} />
+            <KeyboardKey letter={'L'} state={getKeyState('L')} onClick={onKeyPress} />
+            <KeyboardKey letter={'Ö'} state={getKeyState('Ö')} onClick={onKeyPress} />
+            <KeyboardKey letter={'Ä'} state={getKeyState('Ä')} onClick={onKeyPress} />
           </KeyboardRow>
           <KeyboardRow inset>
-            <KeyboardKey letter={'↵'} onClick={onEnterPress} double />
-            <KeyboardKey letter={'Z'} onClick={onKeyPress} />
-            <KeyboardKey letter={'X'} onClick={onKeyPress} />
-            <KeyboardKey letter={'C'} onClick={onKeyPress} />
-            <KeyboardKey letter={'V'} onClick={onKeyPress} />
-            <KeyboardKey letter={'B'} onClick={onKeyPress} />
-            <KeyboardKey letter={'N'} onClick={onKeyPress} />
-            <KeyboardKey letter={'M'} onClick={onKeyPress} />
-            <KeyboardKey letter={'⌫'} onClick={onDeletePress} double />
+            <KeyboardKey letter={'↵'} state={letterState.default} onClick={onEnterPress} double />
+            <KeyboardKey letter={'Z'} state={getKeyState('Z')} onClick={onKeyPress} />
+            <KeyboardKey letter={'X'} state={getKeyState('X')} onClick={onKeyPress} />
+            <KeyboardKey letter={'C'} state={getKeyState('C')} onClick={onKeyPress} />
+            <KeyboardKey letter={'V'} state={getKeyState('V')} onClick={onKeyPress} />
+            <KeyboardKey letter={'B'} state={getKeyState('B')} onClick={onKeyPress} />
+            <KeyboardKey letter={'N'} state={getKeyState('N')} onClick={onKeyPress} />
+            <KeyboardKey letter={'M'} state={getKeyState('M')} onClick={onKeyPress} />
+            <KeyboardKey letter={'⌫'} state={letterState.default} onClick={onDeletePress} double />
           </KeyboardRow>
         </div>
       </div>
@@ -228,9 +257,13 @@ const KeyboardKeySpace = _ => {
   )
 }
 
-const KeyboardKey = ({ letter, double, noMargin, onClick }) => {
+const KeyboardKey = ({ letter, state, double, noMargin, onClick }) => {
   return (
-    <button className={`key`} style={{ flex: double ? 1.5 : 1, margin: noMargin ? 0 : '0 2px 0 2px' }} onClick={_ => onClick && onClick(letter)}>
+    <button 
+      className={`key ${state}`}
+      style={{ flex: double ? 1.5 : 1, margin: noMargin ? 0 : '0 2px 0 2px' }} 
+      onClick={_ => onClick && onClick(letter)}
+    >
       {letter}
     </button>
   )

@@ -57,12 +57,12 @@
 .key {
   height: 52px;
   user-select: none;
-  background-color: white;
+  background-color: hsl(200, 1%, 58%);
   border: 0;
   padding: 0;
   border-radius: 4px;
   cursor: pointer;
-  color: black;
+  color: white;
   display: flex;
   justify-content: center;
   align-items: center;
