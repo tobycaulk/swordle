@@ -148,6 +148,43 @@
 	animation-duration: 0.1s;
 }
 
+.info-window:before {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.info-window {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto auto;
+  width: 95vw;
+  height: 90vw;
+  max-width: 500px;
+  max-height: 400px;
+  background-color: #121213;
+  border-radius: 8px;
+  color: white;
+}
+
+.info-window-inner {
+  position: relative;
+  padding: 40px 60px;
+}
+
+.info-window-top-bar {
+  position: relative;
+  display: flex;
+  justify-content: right;
+  padding: 10px 15px;
+}
+
 @keyframes fadeInOpacity {
 	0% {
 		opacity: 0;

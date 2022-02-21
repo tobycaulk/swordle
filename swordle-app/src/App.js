@@ -34,7 +34,6 @@ const App = () => {
 
   const getKeyState = letter => {
     const usedLetter = usedLetters.filter(ul => ul.letter === letter.toLowerCase())[0];
-    //console.log(usedLetter);
     if(!usedLetter) {
       return letterState.default;
     }
@@ -115,14 +114,12 @@ const App = () => {
       const letterState = scoreLetter(letter, correctWord.toLowerCase(), i);
       updatedWord[i].state = letterState;
       const usedLetter = usedLetters.filter(ul => ul.letter === letter)[0];
-      console.log(usedLetter);
       if(!usedLetter) {
         updatedUsedLetters.push({ letter: letter, state: letterState });
       }
     }
 
     setUsedLetters([...updatedUsedLetters]);
-    console.log(usedLetters);
     updateWord(updatedWord);
     setCurrentRow(currentRow + 1);
   }
@@ -139,6 +136,9 @@ const App = () => {
 
   return (
     <>
+      <InfoWindow>
+        Hello World
+      </InfoWindow>
       {
         (notification && notification.hasOwnProperty('message')) && (
           <Notification 
@@ -284,6 +284,19 @@ const Notification = ({ message, delay, onTimeout }) => {
   }, [delay]);
 
   return visible ? (<div className={`notification ${fadeClassName}`}>{message}</div>) : null;
+}
+
+const InfoWindow = ({ children }) => {
+  return (
+    <div className={'info-window'}>
+      <div className={'info-window-top-bar'}>
+        &#10006;
+      </div>
+      <div className={'info-window-inner'}>
+        {children}
+      </div>
+    </div>
+  )
 }
 
 export default App;
