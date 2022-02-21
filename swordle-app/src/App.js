@@ -8,6 +8,7 @@ const MAX_WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
 const FIRST_DATE = moment("2022-02-14");
 const NOTIFICATION_DELAY = 3000;
+const NOTIFICATION_GAME_FINISHED_DELAY = 4000;
 const NOTIFICATION_FADEOUT = 100;
 
 const letterState = {
@@ -18,7 +19,8 @@ const letterState = {
 }
 
 const notificationMessage = {
-  invalidWord: 'Inte en giltig ord'
+  invalidWord: 'Inte en giltig ord',
+  correctWord: 'Underbar!'
 }
 
 const App = () => {
@@ -28,9 +30,16 @@ const App = () => {
   const [gameBoardHeight, setGameBoardHeight] = useState(500);
   const [correctWord, setCorrectWord] = useState('');
   const [notification, setNotification] = useState({});
+  const [displayOverlay, setDisplayOverlay] = useState(false);
 
   const gameBoardRef = useRef(null);
   const height = use100vh();
+
+  const displayOverlayAfterTimeout = delay => {
+    setTimeout(() => {
+      setDisplayOverlay(true);
+    }, delay);
+  }
 
   const getKeyState = letter => {
     const usedLetter = usedLetters.filter(ul => ul.letter === letter.toLowerCase())[0];
@@ -122,6 +131,18 @@ const App = () => {
     setUsedLetters([...updatedUsedLetters]);
     updateWord(updatedWord);
     setCurrentRow(currentRow + 1);
+
+    if(correctWord.toLowerCase() === constructedWord.toLowerCase()) {
+      setNotification({ message: notificationMessage.correctWord, delay: NOTIFICATION_GAME_FINISHED_DELAY });
+      displayOverlayAfterTimeout(NOTIFICATION_GAME_FINISHED_DELAY);
+      return;
+    }
+
+    if(currentRow === MAX_GUESSES - 1) {
+      setNotification({ message: correctWord, delay: NOTIFICATION_GAME_FINISHED_DELAY });
+      displayOverlayAfterTimeout(NOTIFICATION_GAME_FINISHED_DELAY);
+      return;
+    }
   }
 
   useEffect(() => {
@@ -136,14 +157,18 @@ const App = () => {
 
   return (
     <>
-      <InfoWindow>
-        Hello World
-      </InfoWindow>
+      { displayOverlay && (
+        <>
+        <div className={'overlay fade-in-info-window'} />
+        <InfoWindow onCloseClick={() => setDisplayOverlay(false)}>
+        </InfoWindow>
+      </>
+      )}
       {
         (notification && notification.hasOwnProperty('message')) && (
           <Notification 
             message={notification.message} 
-            delay={NOTIFICATION_DELAY}
+            delay={notification.hasOwnProperty('delay') ? notification.delay : NOTIFICATION_DELAY}
             onTimeout={() => {
               setNotification({});
             }}
@@ -227,7 +252,13 @@ const WordRow = ({ word = [], current }) => {
   return (
       <div className={'word-row'}>
         {[...Array(MAX_WORD_LENGTH)].map((_, i) => {
-          return <Tile key={i} letter={word[i] && word[i].letter} state={word[i] && word[i].state} />
+          return (
+            <Tile 
+              key={i} 
+              letter={word[i] && word[i].letter} 
+              state={word[i] && word[i].state} 
+            />
+          )
         })}
       </div>
   );
@@ -283,14 +314,18 @@ const Notification = ({ message, delay, onTimeout }) => {
     }, delay);
   }, [delay]);
 
-  return visible ? (<div className={`notification ${fadeClassName}`}>{message}</div>) : null;
+  return visible 
+    ? (<div className={`notification ${fadeClassName}`}>{message}</div>) 
+    : null;
 }
 
-const InfoWindow = ({ children }) => {
+const InfoWindow = ({ onCloseClick, children }) => {
   return (
-    <div className={'info-window'}>
+    <div className={'info-window fade-in-info-window'}>
       <div className={'info-window-top-bar'}>
-        &#10006;
+        <span className={'info-window-close-button'} onClick={() => onCloseClick()}>
+          &#10006;
+        </span>
       </div>
       <div className={'info-window-inner'}>
         {children}
